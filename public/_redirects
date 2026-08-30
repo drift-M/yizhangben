@@ -1,0 +1,2 @@
+# Netlify SPA 重定向规则：所有路径都返回 index.html，由 React Router 处理前端路由
+/*    /index.html   200

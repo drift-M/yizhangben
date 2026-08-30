@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="衣账本 - 专为服装店设计的轻量级记账管理工具，支持商品管理、多尺码库存、销售记录和财务报表。" />
+    <meta name="theme-color" content="#C45C3E" />
+
+    <!-- PWA: Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- PWA: iOS 安装支持 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="衣账本" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <title>衣账本 - 服装店记账本</title>
+    <!-- 注意：不引入 Google Fonts。该域名在国内常被墙且样式表会阻塞渲染，
+         字体统一使用 tailwind.config.js 中配置的系统字体回退栈。 -->
+    <script type="module">
+      if (import.meta.hot?.on) {
+        import.meta.hot.on('vite:error', (error) => {
+          if (error.err) {
+            console.error(
+              [error.err.message, error.err.frame].filter(Boolean).join('\n'),
+            )
+          }
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

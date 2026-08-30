@@ -1,0 +1,33 @@
+{
+  "name": "衣账本 - 服装店记账本",
+  "short_name": "衣账本",
+  "description": "专为服装店设计的轻量级记账管理工具，支持商品管理、多尺码库存、销售记录和财务报表。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F7F5F2",
+  "theme_color": "#C45C3E",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "lang": "zh-CN"
+}

@@ -1,0 +1,5 @@
+# Netlify SPA 重定向配置：所有路径都返回 index.html，由 React Router 处理前端路由
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
