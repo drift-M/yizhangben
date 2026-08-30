@@ -11,7 +11,7 @@
  * 缓存版本：更新此常量以触发旧缓存清理。
  */
 
-var CACHE_VERSION = 'ylb-v1';
+var CACHE_VERSION = 'ylb-v2';
 var STATIC_CACHE = 'static-' + CACHE_VERSION;
 var DYNAMIC_CACHE = 'dynamic-' + CACHE_VERSION;
 
@@ -85,24 +85,33 @@ self.addEventListener('fetch', function (event) {
   // 不缓存 API 请求和非 GET 请求
   if (request.method !== 'GET') return;
 
-  // 导航请求：Network First
+  // 导航请求：Stale-While-Revalidate
+  // 有缓存时立即返回缓存（重复打开秒开），同时在后台拉取新版本更新缓存；
+  // 无缓存时等待网络，网络失败再回退到缓存。
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then(function (response) {
-          // 成功响应时更新缓存
-          var clone = response.clone();
-          caches.open(DYNAMIC_CACHE).then(function (cache) {
-            cache.put(request, clone);
+      caches.open(DYNAMIC_CACHE).then(function (cache) {
+        return cache.match(request).then(function (cached) {
+          var networkUpdate = fetch(request)
+            .then(function (response) {
+              if (response.ok) cache.put(request, response.clone());
+              return response;
+            })
+            .catch(function () {
+              return null;
+            });
+
+          if (cached) return cached;
+
+          return networkUpdate.then(function (response) {
+            // 网络失败且无缓存时回退到应用根路径缓存（兼容子路径部署）
+            if (response) return response;
+            return cache.match(self.registration.scope).then(function (fallback) {
+              return fallback || Response.error();
+            });
           });
-          return response;
-        })
-        .catch(function () {
-          // 网络不可用时回退到缓存（scope 即应用根路径，兼容子路径部署）
-          return caches.match(request).then(function (cached) {
-            return cached || caches.match(self.registration.scope);
-          });
-        })
+        });
+      })
     );
     return;
   }

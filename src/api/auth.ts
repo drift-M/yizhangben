@@ -216,16 +216,28 @@ export async function updatePassword(newPassword: string): Promise<void> {
 
 /**
  * 获取当前会话用户
+ *
+ * 优先读取本地持久化会话（getSession 无网络请求，启动秒开）。
+ * 仅当 access token 已过期时才发起一次刷新请求；
+ * 避免每次启动都调用 getUser() 产生慢速网络往返。
  */
 export async function getCurrentUser(): Promise<AppUser | null> {
   if (isSupabaseConfigured) {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return null;
-    const meta = data.user.user_metadata ?? {};
+    const { data } = await supabase.auth.getSession();
+    let session = data.session;
+
+    // token 过期时才需要网络刷新，未过期直接用本地会话
+    if (session?.expires_at && session.expires_at * 1000 < Date.now()) {
+      const refreshed = await supabase.auth.refreshSession();
+      session = refreshed.data.session;
+    }
+
+    if (!session?.user) return null;
+    const meta = session.user.user_metadata ?? {};
     return {
-      id: data.user.id,
-      email: data.user.email ?? '',
-      displayName: (meta.display_name as string) ?? data.user.email ?? '',
+      id: session.user.id,
+      email: session.user.email ?? '',
+      displayName: (meta.display_name as string) ?? session.user.email ?? '',
     };
   }
 

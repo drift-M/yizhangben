@@ -49,8 +49,9 @@ export function filterSalesByRange(sales: Sale[], filters: ReportFilters): Sale[
     }
     case 'custom': {
       if (!filters.startDate || !filters.endDate) return sales;
-      const start = new Date(filters.startDate);
-      const end = new Date(filters.endDate);
+      // 追加 T00:00 让日期按本地时区解析（裸日期字符串会被按 UTC 解析）
+      const start = new Date(`${filters.startDate}T00:00`);
+      const end = new Date(`${filters.endDate}T00:00`);
       end.setDate(end.getDate() + 1);
       return sales.filter((s) => {
         const d = new Date(s.sold_at);
@@ -69,9 +70,12 @@ export function filterSalesByRange(sales: Sale[], filters: ReportFilters): Sale[
  */
 export function aggregateByDate(sales: Sale[]): ReportItem[] {
   const map = new Map<string, ReportItem>();
+  const pad = (n: number) => String(n).padStart(2, '0');
 
   sales.forEach((sale) => {
-    const dateKey = new Date(sale.sold_at).toISOString().slice(0, 10);
+    // 使用本地（北京）日期作为聚合键，避免 UTC 导致凌晨记录归到前一天
+    const d = new Date(sale.sold_at);
+    const dateKey = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     const existing = map.get(dateKey);
     const revenue = sale.unit_price * sale.quantity;
     const cost = sale.cost_price * sale.quantity;

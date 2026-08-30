@@ -11,7 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useDataStore } from '@/store/dataStore';
 import { createSale, deleteSale } from '@/api/sales';
 import { saleSchema, SaleForm } from '@/utils/validation';
-import { formatCurrency, formatDateTime, getTotalStock } from '@/utils/format';
+import { formatCurrency, formatDateTime, getTotalStock, toLocalInputValue } from '@/utils/format';
 import { filterSalesByRange } from '@/api/reports';
 import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
@@ -36,7 +36,7 @@ export function SalesPage() {
     sold_size: '',
     quantity: 1,
     unit_price: 0,
-    sold_at: new Date().toISOString().slice(0, 16),
+    sold_at: toLocalInputValue(new Date()),
   });
   const [errors, setErrors] = useState<Partial<Record<keyof SaleForm, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,7 +115,7 @@ export function SalesPage() {
       sold_size: defaultSize,
       quantity: 1,
       unit_price: defaultProduct?.sale_price ?? 0,
-      sold_at: new Date().toISOString().slice(0, 16),
+      sold_at: toLocalInputValue(new Date()),
     });
     setErrors({});
     setIsModalOpen(true);
@@ -155,7 +155,14 @@ export function SalesPage() {
     event.preventDefault();
     if (!user || !selectedProduct) return;
 
-    const result = saleSchema.safeParse(form);
+    // 输入框是本地时间（无时区），转为带时区的 ISO 时刻再保存，
+    // 否则数据库会按 UTC 解释本地时间，导致显示比北京时间多 8 小时
+    const payload: SaleForm = {
+      ...form,
+      sold_at: new Date(form.sold_at).toISOString(),
+    };
+
+    const result = saleSchema.safeParse(payload);
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof SaleForm, string>> = {};
       result.error.issues.forEach((issue) => {

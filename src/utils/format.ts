@@ -43,6 +43,18 @@ export function formatDateTime(date: string | Date): string {
 }
 
 /**
+ * 生成 datetime-local 输入框的值（本地时间，精确到分钟）
+ *
+ * 不能使用 toISOString()，它返回 UTC 时间，会导致输入框显示比北京时间少 8 小时。
+ */
+export function toLocalInputValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}`;
+}
+
+/**
  * 生成唯一 ID（本地模式使用）
  *
  * 始终生成标准 UUID v4 格式，确保与 Supabase 数据库字段类型兼容。
